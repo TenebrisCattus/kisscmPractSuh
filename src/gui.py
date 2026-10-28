@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import scrolledtext
-from shell import Shell
+from src.shell import Shell
 
 
 class ShellGUI:
