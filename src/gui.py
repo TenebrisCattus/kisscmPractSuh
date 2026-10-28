@@ -15,15 +15,17 @@ class ShellGUI:
         self.root.title(f"VFS: {self.shell.vfs_name}")
         self.root.geometry("600x400")
 
+        self.entry = tk.Entry(root)
+        self.entry.pack(side="bottom", fill="x", padx=5, pady=5)
+        self.entry.bind("<Return>", self.handle_enter)
+        self.entry.focus()
+
         self.text_area = scrolledtext.ScrolledText(
             root, wrap=tk.WORD, state="disabled"
         )
-        self.text_area.pack(expand=True, fill="both", padx=5, pady=5)
-
-        self.entry = tk.Entry(root)
-        self.entry.pack(fill="x", padx=5, pady=5)
-        self.entry.bind("<Return>", self.handle_enter)
-        self.entry.focus()
+        self.text_area.pack(
+            side="top", expand=True, fill="both", padx=5, pady=5
+        )
 
         welcome_text = f"Welcome to Shell Emulator ({self.shell.vfs_name})"
         self.print_output(welcome_text)
