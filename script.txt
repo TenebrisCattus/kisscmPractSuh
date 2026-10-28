@@ -1,0 +1,4 @@
+# Это комментарий в стартовом скрипте
+ls folder1 file2
+cd documents
+unknown_command
