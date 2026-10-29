@@ -15,7 +15,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--vfs",
         type=str,
-        default=DEFAULT_VFS_NAME,
+        default=None,
         help="Path to physical VFS location",
     )
     parser.add_argument(
@@ -49,7 +49,8 @@ def main() -> None:
     """Run the shell emulator application."""
     args = parse_arguments()
 
-    print(f"[DEBUG] VFS path/name: {args.vfs}")
+    vfs_display = args.vfs if args.vfs else DEFAULT_VFS_NAME
+    print(f"[DEBUG] VFS path/name: {vfs_display}")
     print(f"[DEBUG] Startup script: {args.script if args.script else 'None'}")
 
     root = tk.Tk()
