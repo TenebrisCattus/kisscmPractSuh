@@ -1,4 +1,4 @@
-"""Shell REPL logic and command handling with VFS and core commands."""
+"""Shell REPL logic and command handling with VFS, core, and extra commands."""
 
 import time
 from src.vfs import VirtualFileSystem
@@ -8,10 +8,10 @@ UPTIME_FORMAT_SECONDS = 60
 
 
 class Shell:
-    """Represents the shell emulator with full command set."""
+    """Represents the shell emulator with full command set and chown."""
 
     def __init__(self, vfs_path: str | None) -> None:
-        """Initialize shell with VFS, history, and uptime timer."""
+        """Initialize shell with VFS, history, uptime, and ownerships."""
         self.vfs_path = vfs_path
         self.vfs_error = None
         try:
@@ -23,6 +23,7 @@ class Shell:
         self.cwd: list[str] = []
         self.history_list: list[str] = []
         self.start_time = time.time()
+        self.owners: dict[str, str] = {}
 
     def parse_input(self, user_input: str) -> tuple[str, list[str]]:
         """Parse user input into command and arguments."""
@@ -143,6 +144,21 @@ class Shell:
         last_lines = lines[-DEFAULT_TAIL_LINES:]
         return "\n".join(last_lines)
 
+    def cmd_chown(self, args: list[str]) -> str:
+        """Change file or directory owner in memory."""
+        if len(args) < 2:
+            return "chown: missing operand"
+
+        new_owner = args[0]
+        target_path = args[1]
+        node = self._resolve_path(target_path)
+
+        if node is None:
+            return f"chown: {target_path}: No such file or directory"
+
+        self.owners[target_path] = new_owner
+        return f"Owner of '{target_path}' changed to '{new_owner}'"
+
     def execute_command(self, user_input: str) -> str:
         """Execute command and return output string."""
         if self.vfs_error:
@@ -171,5 +187,7 @@ class Shell:
             return self.cmd_uptime()
         if cmd == "tail":
             return self.cmd_tail(args)
+        if cmd == "chown":
+            return self.cmd_chown(args)
 
         return f"Error: unknown command '{cmd}'"
