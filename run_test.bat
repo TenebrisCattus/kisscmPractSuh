@@ -1,3 +1,3 @@
 @echo off
-python -m src.main --vfs "vfs_deep" --script "script_stage3.txt"
+python -m src.main --script "script_stage4.txt"
 pause

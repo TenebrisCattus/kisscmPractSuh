@@ -1,0 +1,10 @@
+# Тестирование основных команд и VFS
+ls
+cd home
+ls
+cd user
+ls
+tail welcome.txt
+history
+uptime
+unknown_command
