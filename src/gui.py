@@ -12,7 +12,7 @@ class ShellGUI:
         """Initialize GUI components and window state."""
         self.root = root
         self.shell = shell
-        self.root.title(f"VFS: {self.shell.vfs_name}")
+        self.root.title(f"VFS: {self.shell.vfs_path}")
         self.root.geometry("600x400")
 
         self.entry = tk.Entry(root)
@@ -27,7 +27,7 @@ class ShellGUI:
             side="top", expand=True, fill="both", padx=5, pady=5
         )
 
-        welcome_text = f"Welcome to Shell Emulator ({self.shell.vfs_name})"
+        welcome_text = f"Welcome to Shell Emulator ({self.shell.vfs_path})"
         self.print_output(welcome_text)
         self.print_output("Type commands (ls, cd, exit):")
 
