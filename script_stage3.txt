@@ -1,0 +1,4 @@
+# Тестирование запуска с VFS и команд
+ls /home/user
+cd documents
+unknown_command
