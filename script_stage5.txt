@@ -1,0 +1,10 @@
+# Итоговый скрипт для тестирования Этапа 5
+ls
+cd home
+cd user
+ls
+tail welcome.txt
+chown admin welcome.txt
+history
+uptime
+unknown_command
