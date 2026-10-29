@@ -1,12 +1,22 @@
-"""Shell REPL logic and command handling."""
+"""Shell REPL logic and command handling with VFS support."""
+
+from src.vfs import VirtualFileSystem
 
 
 class Shell:
     """Represents the shell emulator."""
 
-    def __init__(self, vfs_name: str) -> None:
-        """Initialize shell with VFS name."""
-        self.vfs_name = vfs_name
+    def __init__(self, vfs_path: str | None) -> None:
+        """Initialize shell with VFS instance and error handling."""
+        self.vfs_path = vfs_path
+        self.vfs_error = None
+        try:
+            self.vfs = VirtualFileSystem(vfs_path)
+        except Exception as exc:
+            self.vfs_error = str(exc)
+            self.vfs = VirtualFileSystem(None)
+
+        self.cwd = [""]
 
     def parse_input(self, user_input: str) -> tuple[str, list[str]]:
         """Parse user input into command and arguments."""
@@ -17,6 +27,11 @@ class Shell:
 
     def execute_command(self, user_input: str) -> str:
         """Execute command and return output string."""
+        if self.vfs_error:
+            err_msg = f"Error loading VFS: {self.vfs_error}"
+            self.vfs_error = None
+            return err_msg
+
         cmd, args = self.parse_input(user_input)
         if not cmd:
             return ""
