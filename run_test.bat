@@ -1,3 +1,3 @@
 @echo off
-python -m src.main --script "script_stage5.txt"
+python -m src.main --script "tests/script_stage5.txt"
 pause
