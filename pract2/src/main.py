@@ -2,7 +2,7 @@
 
 import sys
 from config import load_config, validate_config
-from graph import load_test_graph, build_graph
+from graph import load_test_graph, build_graph, get_load_order
 
 
 def print_parameters(config: dict) -> None:
@@ -38,6 +38,10 @@ def main() -> None:
         print(f"Full dependency graph for {config['package_name']}:")
         for pkg, deps in graph.items():
             print(f"  {pkg} -> {list(deps.keys())}")
+
+        load_order = get_load_order(graph, config["package_name"])
+        print(f"\nDependency loading order for {config['package_name']}:")
+        print(" -> ".join(load_order))
 
     except ValueError as err:
         print(f"Validation error: {err}", file=sys.stderr)
