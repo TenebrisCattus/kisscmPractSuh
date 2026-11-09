@@ -61,3 +61,21 @@ def build_graph(name: str, ver: str, cfg: dict,
 
     rec_stack.remove(name)
     return graph
+
+def get_load_order(graph: dict, start_node: str) -> list:
+    """Compute topological loading order of dependencies via DFS."""
+    visited = set()
+    order = []
+
+    def dfs(node: str) -> None:
+        """Recursive helper for topological sort."""
+        if node in visited:
+            return
+        visited.add(node)
+        for dep_name in graph.get(node, {}):
+            dfs(dep_name)
+        order.append(node)
+
+    if start_node in graph:
+        dfs(start_node)
+    return order
