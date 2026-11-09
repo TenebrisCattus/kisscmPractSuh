@@ -2,7 +2,7 @@
 
 import sys
 from config import load_config, validate_config
-from dependency import fetch_package_data, get_direct_dependencies
+from graph import load_test_graph, build_graph
 
 
 def print_parameters(config: dict) -> None:
@@ -23,21 +23,21 @@ def main() -> None:
         validate_config(config)
         print_parameters(config)
 
-        print("\nFetching package dependencies...")
-        pkg_data = fetch_package_data(
-            config["repo_path"],
-            config["package_name"],
-            config["package_version"]
-        )
-        dependencies = get_direct_dependencies(pkg_data)
+        test_data = {}
+        if config.get("test_mode", False):
+            test_data = load_test_graph(config["repo_path"])
 
-        print(f"Direct dependencies for {config['package_name']} "
-              f"(@{config['package_version']}):")
-        if not dependencies:
-            print("  No direct dependencies found.")
-        else:
-            for dep_name, dep_version in dependencies.items():
-                print(f"  - {dep_name}: {dep_version}")
+        print("\nBuilding dependency graph...")
+        graph = build_graph(
+            config["package_name"],
+            config["package_version"],
+            config,
+            test_data
+        )
+
+        print(f"Full dependency graph for {config['package_name']}:")
+        for pkg, deps in graph.items():
+            print(f"  {pkg} -> {list(deps.keys())}")
 
     except ValueError as err:
         print(f"Validation error: {err}", file=sys.stderr)
