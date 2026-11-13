@@ -5,8 +5,6 @@ def generate_plantuml(graph: dict) -> str:
     """Generate PlantUML textual description from dependency graph."""
     lines = ["@startuml", "left to right direction"]
     for pkg, deps in graph.items():
-        if not deps:
-            lines.append(f'"{pkg}"')
         for dep in deps:
             lines.append(f'"{pkg}" --> "{dep}"')
     lines.append("@enduml")
@@ -14,20 +12,22 @@ def generate_plantuml(graph: dict) -> str:
 
 
 def _build_ascii_branch(graph: dict, node: str, prefix: str,
-                        visited: set) -> list:
+                        path: set) -> list:
     """Helper to build ASCII tree lines recursively avoiding cycles."""
     lines = []
-    if node in visited:
-        return [f"{prefix}{node} (cycle)"]
-    visited.add(node)
     deps = list(graph.get(node, {}).keys())
     for i, dep in enumerate(deps):
         is_last = (i == len(deps) - 1)
         connector = "└── " if is_last else "├── "
+        if dep in path:
+            lines.append(f"{prefix}{connector}{dep} (cycle)")
+            continue
         lines.append(f"{prefix}{connector}{dep}")
         extension = "    " if is_last else "│   "
+        sub_path = path.copy()
+        sub_path.add(dep)
         sub_lines = _build_ascii_branch(
-            graph, dep, prefix + extension, visited.copy()
+            graph, dep, prefix + extension, sub_path
         )
         lines.extend(sub_lines)
     return lines
