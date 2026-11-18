@@ -5,6 +5,7 @@ from src.vfs import VirtualFileSystem
 
 DEFAULT_TAIL_LINES = 10
 UPTIME_FORMAT_SECONDS = 60
+arg_for_chown = 2
 
 
 class Shell:
@@ -94,26 +95,25 @@ class Shell:
             return node[target]
         return {}
 
-    def _resolve_path(self, path_str: str) -> dict | str:
+    def _resolve_path(self, path_str: str) -> dict | str | None:
         """Resolve path string to VFS node."""
-        if path_str.startswith("/"):
-            parts = [p for p in path_str.split("/") if p]
-            node = self.vfs.root
-            for p in parts:
-                if isinstance(node, dict) and p in node:
-                    node = node[p]
-                else:
-                    return None
-            return node
-        else:
-            target_node = self._get_current_dir_node()
-            parts = [p for p in path_str.split("/") if p]
-            for p in parts:
-                if isinstance(target_node, dict) and p in target_node:
-                    target_node = target_node[p]
-                else:
-                    return None
-            return target_node
+        start = (
+            self.vfs.root
+            if path_str.startswith("/")
+            else self._get_current_dir_node()
+        )
+        return self._walk(start, path_str)
+
+    @staticmethod
+    def _walk(node: dict | str, path_str: str) -> dict | str | None:
+        """Walk the VFS tree from `node` along `path_str`."""
+        for part in path_str.split("/"):
+            if not part:
+                continue
+            if not isinstance(node, dict) or part not in node:
+                return None
+            node = node[part]
+        return node
 
     def cmd_history(self) -> str:
         """Return command history."""
@@ -146,7 +146,7 @@ class Shell:
 
     def cmd_chown(self, args: list[str]) -> str:
         """Change file or directory owner in memory."""
-        if len(args) < 2:
+        if len(args) < arg_for_chown:
             return "chown: missing operand"
 
         new_owner = args[0]
@@ -158,6 +158,17 @@ class Shell:
 
         self.owners[target_path] = new_owner
         return f"Owner of '{target_path}' changed to '{new_owner}'"
+
+    def _get_handlers(self) -> dict:
+        """Map command names to handlers that accept `args`."""
+        return {
+            "ls": self.cmd_ls,
+            "cd": self.cmd_cd,
+            "tail": self.cmd_tail,
+            "chown": self.cmd_chown,
+            "history": lambda _args: self.cmd_history(),
+            "uptime": lambda _args: self.cmd_uptime(),
+        }
 
     def execute_command(self, user_input: str) -> str:
         """Execute command and return output string."""
@@ -175,19 +186,14 @@ class Shell:
 
         if cmd == "exit":
             return "EXIT"
-        if cmd == "ls":
-            return self.cmd_ls(args)
-        if cmd == "cd":
-            return self.cmd_cd(args)
-        if cmd == "history":
-            res = self.cmd_history()
-            self.history_list.append(user_input)
-            return res
-        if cmd == "uptime":
-            return self.cmd_uptime()
-        if cmd == "tail":
-            return self.cmd_tail(args)
-        if cmd == "chown":
-            return self.cmd_chown(args)
 
-        return f"Error: unknown command '{cmd}'"
+        handler = self._get_handlers().get(cmd)
+        if handler is None:
+            return f"Error: unknown command '{cmd}'"
+
+        result = handler(args)
+
+        if cmd == "history":
+            # history записывается после выполнения, чтобы не попасть в свой же вывод
+            self.history_list.append(user_input)
+        return result
