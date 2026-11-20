@@ -1,5 +1,3 @@
-"""Shell REPL logic and command handling with VFS, core, and extra commands."""
-
 import time
 from src.vfs import VirtualFileSystem
 
@@ -194,6 +192,5 @@ class Shell:
         result = handler(args)
 
         if cmd == "history":
-            # history записывается после выполнения, чтобы не попасть в свой же вывод
             self.history_list.append(user_input)
         return result
